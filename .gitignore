@@ -1,4 +1,7 @@
 .idea
+.terraform/
+*.tfstate
+*.tfstate.backup
 .venv
 
 */__pycache__
