@@ -8,6 +8,7 @@ authors = ["Tony Heng <tony.heng@epita.fr>", "Gabriel Rayzal <gabriel.rayzal@epi
 python = "^3.8"
 fastapi = "^0.86.0"
 uvicorn = {extras = ["standard"], version = "^0.17.6"}
+SQLAlchemy = "^1.4.43"
 
 [tool.poetry.dev-dependencies]
 
