@@ -1,26 +1,15 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 4.7"
-    }
-  }
-
-  required_version = ">= 1.2.0"
-}
-
 provider "aws" {
-  region = "eu-west-3"
+  region = var.region
 }
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.77.0"
+  version = "~> 3.0"
 
   name = "main-vpc"
   cidr = "10.0.0.0/16"
 
-  azs                  = ["eu-west-3a", "eu-west-3b", "eu-west-3c"]
+  azs                  = ["${var.region}a", "${var.region}b", "${var.region}c"]
   public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
   enable_dns_hostnames = true
   enable_dns_support   = true
