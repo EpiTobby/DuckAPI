@@ -1,104 +1,134 @@
 terraform {
   required_providers {
-    azurerm = {
-      source = "hashicorp/azurerm"
-      version = "3.30.0"
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.7"
     }
   }
 
   required_version = ">= 1.2.0"
 }
 
-provider "azurerm" {
-  features {}
+provider "aws" {
+  region = "eu-west-3"
 }
 
-resource "azurerm_linux_virtual_machine" "vm" {
-  admin_username = "IAmRoot"
-  location = azurerm_resource_group.tobby.location
-  name = "DuckAPI-VM"
-  network_interface_ids = [azurerm_network_interface.vm_interface.id]
-  resource_group_name = azurerm_resource_group.tobby.name
-  size = "Standard_F2"
-  os_disk {
-    caching = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "2.77.0"
 
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
-    version   = "latest"
-  }
+  name = "main-vpc"
+  cidr = "10.0.0.0/16"
 
-  admin_ssh_key {
-    username   = "IAmRoot"
-    public_key = file("~/.ssh/id_rsa.pub")
-  }
-
+  azs                  = ["eu-west-3a", "eu-west-3b", "eu-west-3c"]
+  public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 }
 
-resource "azurerm_network_interface" "vm_interface" {
-  name                = "vm-network-interface"
-  location            = azurerm_resource_group.tobby.location
-  resource_group_name = azurerm_resource_group.tobby.name
+data "aws_ami" "amazon-linux" {
+  most_recent = true
+  owners      = ["amazon"]
 
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.ip.id
+  filter {
+    name   = "name"
+    values = ["amzn-ami-hvm-*-x86_64-ebs"]
   }
 }
 
-resource "azurerm_public_ip" "ip" {
-  name                = "myPublicIP"
-  location            = azurerm_resource_group.tobby.location
-  resource_group_name = azurerm_resource_group.tobby.name
-  allocation_method   = "Dynamic"
-}
+resource "aws_launch_configuration" "terramino" {
+  name_prefix     = "learn-terraform-aws-asg-"
+  image_id        = data.aws_ami.amazon-linux.id
+  instance_type   = "t2.micro"
+  user_data       = file("user-data.sh")
+  security_groups = [aws_security_group.terramino_instance.id]
 
-resource "azurerm_subnet" "subnet" {
-  name                 = "internal"
-  resource_group_name  = azurerm_resource_group.tobby.name
-  virtual_network_name = azurerm_virtual_network.example.name
-  address_prefixes     = ["10.0.2.0/24"]
-}
-
-resource "azurerm_virtual_network" "example" {
-  name                = "example-network"
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.tobby.location
-  resource_group_name = azurerm_resource_group.tobby.name
-}
-
-resource "azurerm_resource_group" "tobby" {
-  name     = "tobbyDuck"
-  location = "West Europe"
-}
-
-# Create Network Security Group and rule
-resource "azurerm_network_security_group" "my_terraform_nsg" {
-  name                = "myNetworkSecurityGroup"
-  location            = azurerm_resource_group.tobby.location
-  resource_group_name = azurerm_resource_group.tobby.name
-
-  security_rule {
-    name                       = "SSH"
-    priority                   = 1001
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
-# Connect the security group to the network interface
-resource "azurerm_network_interface_security_group_association" "example" {
-  network_interface_id      = azurerm_network_interface.vm_interface.id
-  network_security_group_id = azurerm_network_security_group.my_terraform_nsg.id
+resource "aws_autoscaling_group" "terramino" {
+  name                 = "terramino"
+  min_size             = 1
+  max_size             = 3
+  desired_capacity     = 1
+  launch_configuration = aws_launch_configuration.terramino.name
+  vpc_zone_identifier  = module.vpc.public_subnets
+
+  tag {
+    key                 = "Name"
+    value               = "HashiCorp Learn ASG - Terramino"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_lb" "terramino" {
+  name               = "learn-asg-terramino-lb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.terramino_lb.id]
+  subnets            = module.vpc.public_subnets
+}
+
+resource "aws_lb_listener" "terramino" {
+  load_balancer_arn = aws_lb.terramino.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.terramino.arn
+  }
+}
+
+resource "aws_lb_target_group" "terramino" {
+  name     = "learn-asg-terramino"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+}
+
+
+resource "aws_autoscaling_attachment" "terramino" {
+  autoscaling_group_name = aws_autoscaling_group.terramino.id
+  alb_target_group_arn   = aws_lb_target_group.terramino.arn
+}
+
+resource "aws_security_group" "terramino_instance" {
+  name = "learn-asg-terramino-instance"
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.terramino_lb.id]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    security_groups = [aws_security_group.terramino_lb.id]
+  }
+
+  vpc_id = module.vpc.vpc_id
+}
+
+resource "aws_security_group" "terramino_lb" {
+  name = "learn-asg-terramino-lb"
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  vpc_id = module.vpc.vpc_id
 }
