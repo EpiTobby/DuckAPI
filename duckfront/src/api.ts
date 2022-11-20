@@ -9,7 +9,10 @@ export type Duck = {
 
 const instance = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
-    timeout: 1000
+    timeout: 1000,
+    headers: {
+        'Access-Control-Allow-Origin': '*',
+    }
 });
 
 export const getDucks = async () => {
@@ -23,12 +26,12 @@ export const getDuck = async (id: number) => {
 }
 
 export const createDuck = async (name: string, age: number, color: string) => {
-    let duck = await instance.post<Duck>('/ducks');
+    let duck = await instance.post<Duck>('/ducks', { name, age, color });
     return duck.data;
 }
 
-export const updateDuck = async (id: number) => {
-    let duck = await instance.put<Duck>(`/ducks/${id}`);
+export const updateDuck = async (id: number, name: string, age: number, color: string) => {
+    let duck = await instance.put<Duck>(`/ducks/${id}`, { name, age, color });
     return duck.data;
 }
 
