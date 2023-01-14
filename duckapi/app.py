@@ -1,8 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import FastAPI, HTTPException
 
-from . import __version__, service, models, schemas
-from .database import SessionLocal, engine
+from . import __version__, schemas, database
 
 
 description = """
@@ -15,58 +13,47 @@ tags_metadata = [
     },
 ]
 
-models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI(
-    title="service Python Tony Leo API",
+    title="Duck API",
     description=description,
     version=__version__,
     openapi_tags=tags_metadata,
 )
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 @app.get("/ducks", tags=["Ducks"])
-async def get_all_ducks(db: Session = Depends(get_db)):
-    db_ducks = service.get_all_ducks(db)
-    return db_ducks
+async def get_all_ducks():
+    return database.get_all_ducks()
 
 
 @app.get("/ducks/{id}", tags=["Ducks"], response_model=schemas.Duck)
-async def get_duck(id: int, db: Session = Depends(get_db)):
-    db_duck = service.get_duck(db, duck_id=id)
+async def get_duck():
+    db_duck = await database.get_duck(id)
     if db_duck is None:
         raise HTTPException(status_code=404, detail="Duck not found")
     return db_duck
 
 
 @app.post("/ducks", tags=["Ducks"], response_model=schemas.Duck, status_code=201)
-async def create_duck(duck: schemas.DuckBase, db: Session = Depends(get_db)):
-    db_duck = service.create_duck(db, duck=duck)
+async def create_duck(duck: schemas.DuckBase):
+    db_duck = database.create_duck(duck)
     if db_duck is None:
         raise HTTPException(status_code=400, detail="Duck not created")
     return db_duck
 
 
-@app.put("/ducks/{id}", tags=["Ducks"], response_model=schemas.Duck)
-async def update_duck(id: int, duck: schemas.DuckBase, db: Session = Depends(get_db)):
-    db_duck = service.update_duck(db, duck_id=id, duck=duck)
+@app.patch("/ducks/{id}", tags=["Ducks"], response_model=schemas.Duck)
+async def update_duck(id: str, duck: schemas.UpdateDuck):
+    db_duck = database.update_duck(id, duck)
     if db_duck is None:
         raise HTTPException(status_code=404, detail="Duck not found")
     return db_duck
 
 
 @app.delete("/ducks/{id}", tags=["Ducks"], status_code=204)
-async def delete_duck(id: int, db: Session = Depends(get_db)) -> None:
-    db_duck = service.get_duck(db, duck_id=id)
+async def delete_duck(id: str) -> None:
+    db_duck = database.get_duck(id)
     if db_duck is None:
         raise HTTPException(status_code=404, detail="Duck not found")
-    service.delete_duck(db, duck_id=id)
+    database.delete_duck(id=id)
     return None
