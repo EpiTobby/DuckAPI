@@ -5,7 +5,7 @@ import uuid
 def lambda_handler(event, context):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('ducks')
-    duck = {"id": str(uuid.uuid4()),"name": event["name"], "age": event["age"], "color": event["color"].upper()}
+    duck = {"uuid": str(uuid.uuid4()),"name": event["name"], "age": event["age"], "color": event["color"].upper()}
     print("Item: " + str(duck))
     table.put_item(Item=duck)
     return {
