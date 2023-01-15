@@ -18,5 +18,5 @@ resource "aws_lambda_function" "create_duck" {
   handler       = "${var.name}.lambda_handler"
 
   runtime = "python3.9"
-  source_code_hash = data.archive_file.payload.output_path
+  source_code_hash = filebase64sha256(data.archive_file.payload.output_path)
 }
