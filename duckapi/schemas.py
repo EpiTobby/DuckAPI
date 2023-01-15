@@ -11,7 +11,12 @@ class DuckBase(BaseModel):
 
 
 class Duck(DuckBase):
-    id: int
+    id: str
 
     class Config:
         orm_mode = True
+
+class UpdateDuck(BaseModel):
+    name: Optional[str] = Field(..., example="Duck Name", description="Name of the Duck")
+    age: Optional[int] = Field(..., example=1, description="Age of the Duck")
+    color: Optional[str] = Field(..., example="Duck Color", description="Color of the Duck")
