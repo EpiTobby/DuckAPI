@@ -18,3 +18,10 @@ module "lambda_get_by_id" {
   iam_role_arn = aws_iam_role.lambdas.arn
   name         = "get_duck_by_uuid"
 }
+
+module "lambda_delete" {
+  source = "./modules/duck_lambda"
+
+  iam_role_arn = aws_iam_role.lambdas.arn
+  name         = "delete_duck"
+}
