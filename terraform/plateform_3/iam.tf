@@ -49,7 +49,8 @@ resource "aws_iam_policy" "lambdas" {
           "dynamodb:GetItem",
           "dynamodb:PutItem",
           "dynamodb:Query",
-          "dynamodb:UpdateItem"
+          "dynamodb:UpdateItem",
+          "dynamodb:Scan"
         ],
         "Effect" : "Allow",
         "Sid" : "",

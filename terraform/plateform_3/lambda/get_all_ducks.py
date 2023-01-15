@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 
 def lambda_handler(event, context):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('ducks-test')
+    table = dynamodb.Table('ducks')
     
     response = table.scan()
     data = response['Items']
@@ -12,4 +12,9 @@ def lambda_handler(event, context):
     while 'LastEvaluatedKey' in response:
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         data.extend(response['Items'])
-    return data
+    return {
+        "statusCode": 200,
+        "body": json.dumps(data),
+        "isBase64Encoded": "false",
+        "headers": { "headerName": "headerValue" },
+    }
