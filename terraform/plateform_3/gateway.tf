@@ -20,9 +20,10 @@ resource "aws_api_gateway_rest_api" "api" {
 
 }
 
+##### Get all ducks
 resource "aws_api_gateway_resource" "get_all" {
   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
-  path_part   = "test_path"
+  path_part   = "duck"
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
 
@@ -50,4 +51,37 @@ resource "aws_lambda_permission" "perm" {
   principal     = "apigateway.amazonaws.com"
   # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
   source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.get_all.http_method}${aws_api_gateway_resource.get_all.path}"
+}
+
+##### Create duck
+resource "aws_api_gateway_resource" "create" {
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  path_part   = "duck"
+  rest_api_id = aws_api_gateway_rest_api.api.id
+}
+
+resource "aws_api_gateway_method" "create" {
+  authorization = "NONE"
+  http_method   = "POST"
+  resource_id   = aws_api_gateway_resource.create.id
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+}
+
+resource "aws_api_gateway_integration" "create" {
+  http_method             = aws_api_gateway_method.create.http_method
+  resource_id             = aws_api_gateway_resource.create.id
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = module.lambda_create.invoke_arn
+}
+
+resource "aws_lambda_permission" "create_duck" {
+
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda_create.function_name
+  principal     = "apigateway.amazonaws.com"
+  # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
+  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.create.http_method}${aws_api_gateway_resource.create.path}"
 }
