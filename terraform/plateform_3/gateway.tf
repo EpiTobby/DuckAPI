@@ -7,6 +7,13 @@ resource "aws_api_gateway_stage" "api" {
 # Used to deploy the rest api
 resource "aws_api_gateway_deployment" "api" {
   rest_api_id = aws_api_gateway_rest_api.api.id
+
+  depends_on = [
+    aws_api_gateway_integration.create,
+    aws_api_gateway_integration.delete,
+    aws_api_gateway_integration.get_all,
+    aws_api_gateway_integration.get_by_id
+  ]
 }
 
 # Rest API Gateway specifications
