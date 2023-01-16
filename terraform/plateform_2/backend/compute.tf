@@ -8,6 +8,7 @@ resource "aws_launch_template" "backend" {
   ]
 
   user_data = base64encode(templatefile("${path.root}/user_data/backend.tpl", {
-    mongo_url = var.database_url
+    mongo_url    = var.database_url,
+    frontend_url = var.frontend_url,
   }))
 }

@@ -9,3 +9,7 @@ variable "amazon_ami" {
 variable "database_url" {
   default = "mongodb://localhost:27017/"
 }
+
+variable "frontend_url" {
+  default = "http://localhost:3000"
+}

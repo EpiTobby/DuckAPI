@@ -24,8 +24,10 @@ app = FastAPI(
     openapi_tags=tags_metadata,
 )
 
+frontend_origin = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 origins = [
+    frontend_origin,
     "http://localhost",
     "http://localhost:8080",
     "http://localhost:3000",

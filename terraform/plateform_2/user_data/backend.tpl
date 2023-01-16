@@ -21,8 +21,10 @@ cd DuckAPI/
 pip3 install fastapi uvicorn pymongo sqlalchemy
 
 export MONGO_HOST=${mongo_url}
+export FRONTEND_URL=http://${frontend_url}:3000
 
 echo "MONGO_HOST=${mongo_url}" > .env
+echo "FRONTEND_URL=http://${frontend_url}:3000" >> .env
 
 # Start the server
 uvicorn duckapi.app:app --host 0.0.0.0

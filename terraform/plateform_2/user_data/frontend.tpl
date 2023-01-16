@@ -30,9 +30,9 @@ cd DuckAPI/duckfront
 # Install the dependencies
 npm install
 
-export REACT_APP_API_URL=${api_url}
+export REACT_APP_API_URL=http://${api_url}
 
-echo "REACT_APP_API_URL=${api_url}" > .env
+echo "REACT_APP_API_URL=http://${api_url}" > .env
 
 # Build the application
 npm run build

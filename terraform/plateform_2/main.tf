@@ -16,24 +16,23 @@ data "aws_ami" "amazon_ami" {
 }
 
 module "frontend" {
-  source = "./frontend"
-  amazon_ami = data.aws_ami.amazon_ami.id
-  key_name = aws_key_pair.generated_key.key_name
+  source      = "./frontend"
+  amazon_ami  = data.aws_ami.amazon_ami.id
+  key_name    = aws_key_pair.generated_key.key_name
   backend_url = module.backend.backend-server
-
-  depends_on = [module.backend]
 }
 
 module "backend" {
-  source = "./backend"
-  amazon_ami = data.aws_ami.amazon_ami.id
-  key_name = aws_key_pair.generated_key.key_name
+  source       = "./backend"
+  amazon_ami   = data.aws_ami.amazon_ami.id
+  key_name     = aws_key_pair.generated_key.key_name
   database_url = module.database.database_public_url
+  frontend_url = module.frontend.frontend-server
 }
 
 module "database" {
-  source = "./database"
-  amazon_ami = data.aws_ami.amazon_ami.id
-  key_name = aws_key_pair.generated_key.key_name
+  source                 = "./database"
+  amazon_ami             = data.aws_ami.amazon_ami.id
+  key_name               = aws_key_pair.generated_key.key_name
   backend-vpc-cidr-block = module.backend.backend-vpc-cidr-block
 }
