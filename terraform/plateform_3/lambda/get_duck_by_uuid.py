@@ -8,26 +8,25 @@ def lambda_handler(event, context):
 
     table = dynamodb.Table('ducks')
     
-    response = table.scan()
-    data = response['Items']
-
-    queryParameters = event['pathParameters']
+    queryParameters = event['params']['querystring']
     if 'uuid' in queryParameters:
         uuid = queryParameters['uuid']
-        while 'LastEvaluatedKey' in response:
-            response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-            data.extend(response['Items'])
-        for duck in data:
-            if duck['uuid'] == uuid:
-                return {
-                    'statusCode': 200,
-                    'body': json.dumps(duck, default=to_serializable)
-                }
+        try:
+            resp = table.get_item(
+                Key={
+                    'uuid': uuid
+                },
+            )
+            return {
+                'statusCode': 200,
+                'body': json.dumps(resp['Item'], default=to_serializable)
+            }
+        except:
+            pass
     return {
         'statusCode': 404,
-        'body': json.dumps({})
+        'body':  json.dumps({})
     }
-
 
 def to_serializable(val):
     """JSON serializer for objects not serializable by default"""
