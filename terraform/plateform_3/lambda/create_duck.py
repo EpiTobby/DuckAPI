@@ -3,12 +3,14 @@ import boto3
 import uuid
 
 def lambda_handler(event, context):
+    print(event)
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('ducks')
-    duck = {"id": str(uuid.uuid4()),"name": event["name"], "age": event["age"], "color": event["color"].upper()}
+    body = json.loads(event["body"])
+    duck = {"uuid": str(uuid.uuid4()),"name": body["name"], "age": body["age"], "color": body["color"].upper()}
     print("Item: " + str(duck))
     table.put_item(Item=duck)
     return {
         'statusCode': 200,
-        'body': duck
+        'body': json.dumps(duck)
     }
