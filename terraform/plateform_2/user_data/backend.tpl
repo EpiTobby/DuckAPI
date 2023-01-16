@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # Update the package manager
-sudo apt-get update
+sudo yum update -y
 
-# Install Python and pip
-sudo apt-get install -y python3-pip
+#Download get-pip to current directory. It won't install anything, as of now
+curl -O https://bootstrap.pypa.io/get-pip.py
+
+#Use python3.6 to install pip
+python3 get-pip.py
 
 # Install git
 sudo yum install -y git
@@ -13,16 +16,11 @@ sudo yum install -y git
 git clone https://github.com/EpiTobby/DuckAPI.git
 
 # Move to the frontend folder
-cd DuckAPI/duckapi
+cd DuckAPI/
 
-# Create a virtual environment
-python3 -m venv venv
-source venv/bin/activate
+pip3 install fastapi uvicorn pymongo sqlalchemy
 
-# Install FastAPI and its dependencies
-pip install fastapi uvicorn
-
-export MONGO_URL=${mongo_url}
+export MONGO_HOST=${mongo_url}
 
 # Start the server
-uvicorn app:app --host 0.0.0.0 --port 3000
+uvicorn duckapi.app:app --host 0.0.0.0

@@ -2,7 +2,11 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from . import schemas
 
-client = MongoClient('mongodb://localhost:27017/')
+import os
+
+mongo_host = os.getenv("MONGO_HOST", "localhost")
+
+client = MongoClient(f'mongodb://${mongo_host}:27017/')
 duck_collection = client['ducks']['ducks_collection']
 
 def duck_helper(duck):
