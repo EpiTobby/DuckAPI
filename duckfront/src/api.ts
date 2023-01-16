@@ -31,7 +31,7 @@ export const createDuck = async (name: string, age: number, color: string) => {
 }
 
 export const updateDuck = async (id: number, name: string, age: number, color: string) => {
-    let duck = await instance.put<Duck>(`/ducks/${id}`, { name, age, color });
+    let duck = await instance.patch<Duck>(`/ducks/${id}`, { name, age, color });
     return duck.data;
 }
 
