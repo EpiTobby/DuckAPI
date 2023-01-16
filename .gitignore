@@ -3,5 +3,5 @@
 *.tfstate
 *.tfstate.backup
 .venv
-
+*.pem
 */__pycache__
