@@ -28,7 +28,7 @@ module "backend" {
   source = "./backend"
   amazon_ami = data.aws_ami.amazon_ami.id
   key_name = aws_key_pair.generated_key.key_name
-  database_url = module.database.database_private_url
+  database_url = module.database.database_public_url
 }
 
 module "database" {

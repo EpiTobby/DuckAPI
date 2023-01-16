@@ -6,7 +6,7 @@ import os
 
 mongo_host = os.getenv("MONGO_HOST", "localhost")
 
-client = MongoClient(f'mongodb://${mongo_host}:27017/')
+client = MongoClient(f'mongodb://{mongo_host}:27017/')
 duck_collection = client['ducks']['ducks_collection']
 
 def duck_helper(duck):
