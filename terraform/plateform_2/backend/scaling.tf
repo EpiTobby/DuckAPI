@@ -15,6 +15,7 @@ resource "aws_autoscaling_group" "backend" {
     aws_subnet.subnet_backend_az_3.id
   ]
   target_group_arns = [
+    aws_lb_target_group.backend_lb_target_group.arn
   ]
 }
 

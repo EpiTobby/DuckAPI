@@ -32,6 +32,8 @@ npm install
 
 export REACT_APP_API_URL=${api_url}
 
+echo "REACT_APP_API_URL=${api_url}" > .env
+
 # Build the application
 npm run build
 

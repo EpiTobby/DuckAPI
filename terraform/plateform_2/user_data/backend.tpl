@@ -22,5 +22,7 @@ pip3 install fastapi uvicorn pymongo sqlalchemy
 
 export MONGO_HOST=${mongo_url}
 
+echo "MONGO_HOST=${mongo_url}" > .env
+
 # Start the server
 uvicorn duckapi.app:app --host 0.0.0.0

@@ -1,9 +1,11 @@
-
+import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__, schemas, database
+import os
 
+mongo_host = os.getenv("MONGO_HOST", "localhost")
 
 description = """
 DuckAPI
@@ -36,6 +38,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+start_time = datetime.datetime.now()
+
+@app.get("/")
+def uptime():
+    current_time = datetime.datetime.now()
+    uptime = current_time - start_time
+    return {"uptime": str(uptime)}
+
+@app.get("/db")
+def get_db():
+    return {"db": mongo_host}
 
 @app.get("/ducks", tags=["Ducks"])
 async def get_all_ducks():
