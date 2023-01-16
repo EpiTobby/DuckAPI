@@ -3,7 +3,7 @@
 *.tfstate
 *.tfstate.backup
 .venv
-
+*.pem
 */__pycache__
 
 terraform/plateform_3/output
