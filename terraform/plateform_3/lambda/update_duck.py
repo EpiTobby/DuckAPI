@@ -34,11 +34,21 @@ def lambda_handler(event, context):
         )
         return {
             'statusCode': 200,
-            'body': json.dumps(resp['Item'], default=to_serializable)
+            'body': json.dumps(resp['Item'], default=to_serializable),
+            "headers": {
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS,PATCH",
+                "Access-Control-Allow-Origin": "*",
+            },
         }
     return {
         'statusCode': 404,
-        'body': json.dumps({})
+        'body': json.dumps({}),
+        "headers": {
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,OPTIONS,PATCH",
+            "Access-Control-Allow-Origin": "*",
+        },
     }
 
 def to_serializable(val):

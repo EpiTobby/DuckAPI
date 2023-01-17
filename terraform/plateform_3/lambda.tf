@@ -26,6 +26,13 @@ module "lambda_delete" {
   name         = "delete_duck"
 }
 
+module "lambda_update" {
+  source = "./modules/duck_lambda"
+
+  iam_role_arn = aws_iam_role.lambdas.arn
+  name         = "update_duck"
+}
+
 module "lambda_cors" {
   source = "./modules/duck_lambda"
 

@@ -187,7 +187,7 @@ resource "aws_api_gateway_integration_response" "get_all" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'*'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 }
@@ -200,7 +200,61 @@ resource "aws_api_gateway_integration_response" "create" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'*'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+}
+
+##### Update duck by id
+resource "aws_api_gateway_method" "update" {
+  authorization = "NONE"
+  http_method   = "PATCH"
+  resource_id   = aws_api_gateway_resource.uuid.id
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+}
+
+resource "aws_api_gateway_integration" "update" {
+  http_method             = aws_api_gateway_method.update.http_method
+  resource_id             = aws_api_gateway_resource.uuid.id
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = module.lambda_update.invoke_arn
+}
+
+resource "aws_lambda_permission" "update" {
+
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda_update.function_name
+  principal     = "apigateway.amazonaws.com"
+  # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
+  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.update.http_method}${aws_api_gateway_resource.uuid.path}"
+}
+
+
+resource "aws_api_gateway_method_response" "update" {
+  http_method = aws_api_gateway_method.update.http_method
+  resource_id = aws_api_gateway_method.update.resource_id
+  rest_api_id = aws_api_gateway_method.update.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "update" {
+  http_method = aws_api_gateway_method.update.http_method
+  resource_id = aws_api_gateway_method.update.resource_id
+  rest_api_id = aws_api_gateway_method.update.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'*'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 }
@@ -244,7 +298,7 @@ resource "aws_api_gateway_integration_response" "cors" {
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'*'",
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
 }
