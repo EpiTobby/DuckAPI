@@ -2,6 +2,11 @@ resource "aws_s3_bucket" "front" {
   bucket        = "www.epita-arinf-duckapi-bucket"
   force_destroy = true
 
+  provisioner "local-exec" {
+    command = "npm run build"
+    working_dir = "../../duckfront"
+    when = create
+  }
 }
 
 resource "aws_s3_bucket_acl" "front" {
