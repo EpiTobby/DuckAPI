@@ -3,7 +3,7 @@ resource "aws_s3_bucket" "front" {
   force_destroy = true
 
   provisioner "local-exec" {
-    command = "npm run build"
+    command = "REACT_APP_API_URL=${aws_api_gateway_deployment.api.invoke_url} npm run build"
     working_dir = "../../duckfront"
     when = create
   }
