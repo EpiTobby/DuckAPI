@@ -28,22 +28,17 @@ resource "aws_api_gateway_rest_api" "api" {
 }
 
 ##### Get all ducks
-resource "aws_api_gateway_resource" "get_all" {
-  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
-  path_part   = "duck"
-  rest_api_id = aws_api_gateway_rest_api.api.id
-}
 
 resource "aws_api_gateway_method" "get_all" {
   authorization = "NONE"
   http_method   = "GET"
-  resource_id   = aws_api_gateway_resource.get_all.id
+  resource_id   = aws_api_gateway_resource.ducks.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
 }
 
 resource "aws_api_gateway_integration" "get_all" {
   http_method             = aws_api_gateway_method.get_all.http_method
-  resource_id             = aws_api_gateway_resource.get_all.id
+  resource_id             = aws_api_gateway_resource.ducks.id
   rest_api_id             = aws_api_gateway_rest_api.api.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
@@ -57,26 +52,28 @@ resource "aws_lambda_permission" "perm" {
   function_name = module.lambda_get_all.function_name
   principal     = "apigateway.amazonaws.com"
   # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
-  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.get_all.http_method}${aws_api_gateway_resource.get_all.path}"
+  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.get_all.http_method}${aws_api_gateway_resource.ducks.path}"
 }
 
-##### Create duck
-resource "aws_api_gateway_resource" "create" {
+resource "aws_api_gateway_resource" "ducks" {
   parent_id   = aws_api_gateway_rest_api.api.root_resource_id
-  path_part   = "duck"
+  path_part   = "ducks"
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
+
+
+##### Create duck
 
 resource "aws_api_gateway_method" "create" {
   authorization = "NONE"
   http_method   = "POST"
-  resource_id   = aws_api_gateway_resource.create.id
+  resource_id   = aws_api_gateway_resource.ducks.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
 }
 
 resource "aws_api_gateway_integration" "create" {
   http_method             = aws_api_gateway_method.create.http_method
-  resource_id             = aws_api_gateway_resource.create.id
+  resource_id             = aws_api_gateway_resource.ducks.id
   rest_api_id             = aws_api_gateway_rest_api.api.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
@@ -90,12 +87,12 @@ resource "aws_lambda_permission" "create_duck" {
   function_name = module.lambda_create.function_name
   principal     = "apigateway.amazonaws.com"
   # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
-  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.create.http_method}${aws_api_gateway_resource.create.path}"
+  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.create.http_method}${aws_api_gateway_resource.ducks.path}"
 }
 
 ##### Delete duck
-resource "aws_api_gateway_resource" "delete" {
-  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+resource "aws_api_gateway_resource" "uuid" {
+  parent_id   = aws_api_gateway_resource.ducks.id
   path_part   = "{uuid}"
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
@@ -103,13 +100,13 @@ resource "aws_api_gateway_resource" "delete" {
 resource "aws_api_gateway_method" "delete" {
   authorization = "NONE"
   http_method   = "DELETE"
-  resource_id   = aws_api_gateway_resource.delete.id
+  resource_id   = aws_api_gateway_resource.uuid.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
 }
 
 resource "aws_api_gateway_integration" "delete" {
   http_method             = aws_api_gateway_method.delete.http_method
-  resource_id             = aws_api_gateway_resource.delete.id
+  resource_id             = aws_api_gateway_resource.uuid.id
   rest_api_id             = aws_api_gateway_rest_api.api.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
@@ -123,7 +120,7 @@ resource "aws_lambda_permission" "delete_duck" {
   function_name = module.lambda_delete.function_name
   principal     = "apigateway.amazonaws.com"
   # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
-  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.delete.http_method}${aws_api_gateway_resource.delete.path}"
+  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.delete.http_method}${aws_api_gateway_resource.uuid.path}"
 }
 
 
@@ -131,13 +128,13 @@ resource "aws_lambda_permission" "delete_duck" {
 resource "aws_api_gateway_method" "get_by_id" {
   authorization = "NONE"
   http_method   = "GET"
-  resource_id   = aws_api_gateway_resource.delete.id
+  resource_id   = aws_api_gateway_resource.uuid.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
 }
 
 resource "aws_api_gateway_integration" "get_by_id" {
   http_method             = aws_api_gateway_method.get_by_id.http_method
-  resource_id             = aws_api_gateway_resource.delete.id
+  resource_id             = aws_api_gateway_resource.uuid.id
   rest_api_id             = aws_api_gateway_rest_api.api.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
@@ -151,5 +148,5 @@ resource "aws_lambda_permission" "get_duck_by_id" {
   function_name = module.lambda_get_by_id.function_name
   principal     = "apigateway.amazonaws.com"
   # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
-  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.get_by_id.http_method}${aws_api_gateway_resource.delete.path}"
+  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.get_by_id.http_method}${aws_api_gateway_resource.uuid.path}"
 }
