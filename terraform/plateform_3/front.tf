@@ -3,7 +3,7 @@ resource "aws_s3_bucket" "front" {
   force_destroy = true
 
   provisioner "local-exec" {
-    command = "REACT_APP_API_URL=${aws_api_gateway_deployment.api.invoke_url} npm run build"
+    command = "REACT_APP_API_URL=${aws_api_gateway_stage.api.invoke_url} npm run build"
     working_dir = "../../duckfront"
     when = create
   }
@@ -35,6 +35,18 @@ data "aws_iam_policy_document" "public_read" {
       aws_s3_bucket.front.arn,
       "${aws_s3_bucket.front.arn}/*",
     ]
+  }
+}
+
+resource "aws_s3_bucket_cors_configuration" "front" {
+  bucket = aws_s3_bucket.front.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST", "GET", "DELETE"]
+    allowed_origins = ["*"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
   }
 }
 

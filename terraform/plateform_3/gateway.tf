@@ -12,7 +12,8 @@ resource "aws_api_gateway_deployment" "api" {
     aws_api_gateway_integration.create,
     aws_api_gateway_integration.delete,
     aws_api_gateway_integration.get_all,
-    aws_api_gateway_integration.get_by_id
+    aws_api_gateway_integration.get_by_id,
+    aws_api_gateway_integration.cors,
   ]
 }
 
@@ -149,4 +150,111 @@ resource "aws_lambda_permission" "get_duck_by_id" {
   principal     = "apigateway.amazonaws.com"
   # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
   source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.get_by_id.http_method}${aws_api_gateway_resource.uuid.path}"
+}
+
+
+resource "aws_api_gateway_method_response" "get_all" {
+  http_method = aws_api_gateway_method.get_all.http_method
+  resource_id = aws_api_gateway_method.get_all.resource_id
+  rest_api_id = aws_api_gateway_method.get_all.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "create" {
+  http_method = aws_api_gateway_method.create.http_method
+  resource_id = aws_api_gateway_method.create.resource_id
+  rest_api_id = aws_api_gateway_method.create.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "get_all" {
+  http_method = aws_api_gateway_method.get_all.http_method
+  resource_id = aws_api_gateway_method.get_all.resource_id
+  rest_api_id = aws_api_gateway_method.get_all.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'*'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "create" {
+  http_method = aws_api_gateway_method.create.http_method
+  resource_id = aws_api_gateway_method.create.resource_id
+  rest_api_id = aws_api_gateway_method.create.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'*'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+}
+
+### CORS
+
+resource "aws_api_gateway_method" "cors" {
+  authorization = "NONE"
+  http_method   = "OPTIONS"
+  resource_id   = aws_api_gateway_resource.ducks.id
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+}
+
+resource "aws_api_gateway_integration" "cors" {
+  http_method             = aws_api_gateway_method.cors.http_method
+  resource_id             = aws_api_gateway_resource.ducks.id
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = module.lambda_cors.invoke_arn
+}
+
+resource "aws_api_gateway_method_response" "cors" {
+  http_method = aws_api_gateway_method.cors.http_method
+  resource_id = aws_api_gateway_method.cors.resource_id
+  rest_api_id = aws_api_gateway_method.cors.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "cors" {
+  http_method = aws_api_gateway_method.cors.http_method
+  resource_id = aws_api_gateway_method.cors.resource_id
+  rest_api_id = aws_api_gateway_method.cors.rest_api_id
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'*'",
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT'",
+    "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  }
+}
+
+resource "aws_lambda_permission" "cors" {
+
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda_cors.function_name
+  principal     = "apigateway.amazonaws.com"
+  # source_arn    = "${aws_api_gateway_deployment.api.execution_arn}/*/*/*"
+  source_arn    = "arn:aws:execute-api:eu-west-3:${var.account_id}:${aws_api_gateway_rest_api.api.id}/*/${aws_api_gateway_method.cors.http_method}${aws_api_gateway_resource.ducks.path}"
 }
