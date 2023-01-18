@@ -12,7 +12,7 @@ REGION_AV_ZONE=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/
 systemctl start httpd.service
 systemctl enable httpd.service
 
-echo “Hello World from $(hostname -f) from the availability zone: $REGION_AV_ZONE ${api_url}” > /var/www/html/index.html
+echo “Hello World from $(hostname -f) from the availability zone: $REGION_AV_ZONE” > /var/www/html/index.html
 
 # Install Node.js and npm
 curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
