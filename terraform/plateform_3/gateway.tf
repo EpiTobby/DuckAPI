@@ -190,6 +190,8 @@ resource "aws_api_gateway_integration_response" "get_all" {
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
+
+  depends_on = [aws_api_gateway_integration.get_all]
 }
 
 resource "aws_api_gateway_integration_response" "create" {
@@ -203,6 +205,8 @@ resource "aws_api_gateway_integration_response" "create" {
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
+
+  depends_on = [aws_api_gateway_integration.create]
 }
 
 ##### Update duck by id
@@ -257,6 +261,8 @@ resource "aws_api_gateway_integration_response" "update" {
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
+
+  depends_on = [aws_api_gateway_integration.update]
 }
 
 ### CORS
@@ -301,6 +307,8 @@ resource "aws_api_gateway_integration_response" "cors" {
     "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS,POST,PUT,PATCH'",
     "method.response.header.Access-Control-Allow-Origin" = "'*'"
   }
+
+  depends_on = [aws_api_gateway_integration.cors]
 }
 
 resource "aws_lambda_permission" "cors" {

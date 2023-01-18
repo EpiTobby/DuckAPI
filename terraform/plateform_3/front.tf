@@ -68,6 +68,8 @@ module "dir" {
   version  = "1.0.2"
   # insert the 1 required variable here
   base_dir = "../../duckfront/build/"
+
+  depends_on = [aws_s3_bucket.front]
 }
 
 resource "aws_s3_bucket_website_configuration" "front" {
@@ -78,12 +80,4 @@ resource "aws_s3_bucket_website_configuration" "front" {
   }
 
   depends_on = [aws_s3_object.front_build]
-}
-
-output "website_domain" {
-  value = aws_s3_bucket_website_configuration.front.website_domain
-}
-
-output "website_endpoint" {
-  value = aws_s3_bucket_website_configuration.front.website_endpoint
 }
