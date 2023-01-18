@@ -94,7 +94,6 @@ function App() {
       <div className="App">
           <main>
               <Container component="section" maxWidth="xs">
-                  <h3>{process.env.REACT_APP_API_URL}</h3>
                   <Box
                     sx={{
                         marginTop: 8,
